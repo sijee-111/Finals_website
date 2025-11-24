@@ -1,7 +1,8 @@
+import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
-  children: JSX.Element;
+  children: ReactNode;
   allowedRoles?: string[];
 }
 
@@ -21,5 +22,5 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     return <Navigate to="/guestdashboard" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 }
