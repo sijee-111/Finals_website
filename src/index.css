@@ -1,0 +1,18 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, var(--sage-10, #e9f5db), var(--sage-30, #cfe1b9) 55%, var(--sage-50, #b5c99a));
+}
+
+a {
+  color: inherit;
+}
