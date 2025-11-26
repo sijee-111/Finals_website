@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function Register() {
@@ -27,7 +27,7 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:4000/register", form);
+      const res = await api.post("/register", form);
       setMessage(res.data.message);
       if (res.data.success) setTimeout(() => navigate("/"), 1000);
     } catch (err) {
@@ -110,4 +110,3 @@ export default function Register() {
     </div>
   );
 }
-// ...existing code...

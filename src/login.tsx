@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-import axios from "axios";
+import api from "./api";
 
 type StudentRecord = {
   studentNumber: string;
@@ -24,7 +24,7 @@ export default function Login() {
 
   const syncStudentIdentity = async (emailInput: string, passwordInput: string) => {
     try {
-      const { data } = await axios.get<StudentRecord[]>(process.env.REACT_APP_API_URL || "http://localhost:4000");
+      const { data } = await api.get<StudentRecord[]>(process.env.REACT_APP_API_URL || "http://localhost:4000");
       const normalizedEmail = emailInput.trim().toLowerCase();
       const normalizedNumber = passwordInput.trim().toLowerCase();
       const match = data.find(
@@ -50,7 +50,7 @@ export default function Login() {
       return false;
     }
     try {
-      const { data } = await axios.get<StudentRecord[]>(process.env.REACT_APP_API_URL || "http://localhost:4000");
+      const { data } = await api.get<StudentRecord[]>(process.env.REACT_APP_API_URL || "http://localhost:4000");
       const match = data.find(
         (student) =>
           student.email.toLowerCase() === normalizedEmail &&
@@ -71,10 +71,7 @@ export default function Login() {
   // === Manual login ===
   const handleLogin = async () => {
     try {
-      const { data } = await axios.post(process.env.REACT_APP_API_URL || "http://localhost:4000", {
-        username,
-        password,
-      });
+      const { data } = await api.post("/login", { username, password });
 
       if (data.success) {
         const normalizedRole = (data.role ?? "").toLowerCase();
@@ -113,17 +110,6 @@ export default function Login() {
         setMessage("Server error");
       }
     }
-  //    if (data.success) {
-  //       localStorage.setItem("fullname", data.fullname || "");
-  //       setMessage("Login successful!");
-  //       window.location.href = "/dashboard";
-  //     } else {
-  //       setMessage(data.message || "Invalid credentials");
-  //     }
-  //   } catch (error) {
-  //     console.error("Login error:", error);
-  //     setMessage("Server error. Please try again later.");
-  //   }
   };
 
   return (

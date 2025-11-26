@@ -1,7 +1,6 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 
 interface Student {
   id: number;
@@ -50,16 +49,11 @@ export default function Dashboard() {
   const canManageRecords = role === "admin";
   const navigate = useNavigate();
 
-  const api = axios.create({
-    baseURL: "http://localhost:4000",
-    headers: { "Content-Type": "application/json" },
-  });
-
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const res = await api.get<Student[]>("/students");
-      setStudents(res.data);
+      const { data } = await api.get("/students");
+      setStudents(data);
     } catch (error) {
       console.error("Failed to load students", error);
       setMessage("Unable to fetch students from the server.");
@@ -165,7 +159,7 @@ export default function Dashboard() {
         await api.put(`/students/${editingId}`, payload);
         setMessage("Student updated successfully.");
       } else {
-        await api.post("/students", payload);
+        const { data } = await api.post("/students", payload);
         setMessage("Student added successfully.");
       }
       setForm({ ...emptyForm });
