@@ -151,52 +151,77 @@ export default function Dashboard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canManageRecords) {
-      setMessage("Only administrators can save changes.");
-      return;
-    }
-    setMessage("");
+    console.log("handleSubmit called"); // <-- add this
 
+    const yearLevelInt = Number(form.yearLevel);
     const payload = {
       studentNumber: form.studentNumber.trim(),
       firstName: form.firstName.trim(),
       lastName: form.lastName.trim(),
       program: form.program.trim(),
-      yearLevel: Number(form.yearLevel),
+      yearLevel: yearLevelInt,
       email: form.email.trim(),
       contactNumber: form.contactNumber.trim(),
       admissionDate: form.admissionDate,
       status: form.status,
     };
 
+    // stricter validation (allow 0 -> invalid)
     if (
       !payload.studentNumber ||
       !payload.firstName ||
       !payload.lastName ||
       !payload.program ||
-      !payload.yearLevel ||
+      !Number.isInteger(payload.yearLevel) ||
+      payload.yearLevel < 1 ||
+      payload.yearLevel > 6 ||
       !payload.email ||
       !payload.admissionDate
     ) {
-      setMessage("Please complete all fields before submitting.");
+      setMessage("Please complete all fields with valid values (year 1-6).");
       return;
     }
 
     try {
+      console.log("About to POST to:", api.defaults.baseURL); // <-- see the URL
+      console.log("Submitting student payload:", payload);
+      
       if (editingId) {
-        await api.put(`/students/${editingId}`, payload);
-        setMessage("Student updated successfully.");
+        const res = await api.put(`/students/${editingId}`, payload);
+        // handle server response shape
+        if (res?.data?.success === false) {
+          setMessage(res.data.message || "Update failed.");
+        } else {
+          setMessage(res?.data?.message ?? "Student updated successfully.");
+          // update local list if server returned updated student
+          if (res?.data?.student) {
+            setStudents((prev) => prev.map((s) => (s.id === editingId ? res.data.student : s)));
+          } else {
+            await fetchStudents();
+          }
+        }
       } else {
-        const { data } = await api.post("/students", payload);
-        setMessage("Student added successfully.");
+        const res = await api.post("/students", payload);
+        console.log("POST response:", res);
+        if (res?.data?.success === false) {
+          setMessage(res.data.message || "Unable to add student.");
+        } else {
+          setMessage(res?.data?.message ?? "Student added successfully.");
+          // if server returned created student, prepend it
+          if (res?.data?.student) {
+            setStudents((prev) => [res.data.student, ...prev]);
+          } else {
+            await fetchStudents();
+          }
+        }
       }
+
       setForm({ ...emptyForm });
       setEditingId(null);
       setIsFormOpen(false);
-      fetchStudents();
     } catch (error: any) {
       console.error("Failed to save student", error);
-      setMessage(error?.response?.data?.message ?? "Unable to save student.");
+      setMessage(error?.response?.data?.message ?? error?.message ?? "Unable to save student.");
     }
   };
 
@@ -524,4 +549,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

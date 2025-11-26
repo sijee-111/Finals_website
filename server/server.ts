@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import mysql from "mysql2/promise";
@@ -247,12 +246,16 @@ app.get("/students/:id", async (req, res) => {
 });
 
 app.post("/students", async (req, res) => {
+  console.log("📝 POST /students received:", req.body); // <-- add this
   const { valid, message, payload } = parseStudentPayload(req.body);
+  
   if (!valid || !payload) {
+    console.log("❌ Validation failed:", message);
     return res.status(400).json({ success: false, message });
   }
 
   try {
+    console.log("✅ Inserting student:", payload);
     await db.query(
       `INSERT INTO students (
         student_number,
@@ -280,7 +283,7 @@ app.post("/students", async (req, res) => {
     );
     res.json({ success: true, message: "Student added successfully" });
   } catch (error: any) {
-    console.error("Error adding student:", error);
+    console.error("🔴 DB Error:", error);
     if (error.code === "ER_DUP_ENTRY") {
       return res
         .status(409)
