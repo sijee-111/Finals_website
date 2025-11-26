@@ -24,7 +24,7 @@ export default function Login() {
 
   const syncStudentIdentity = async (emailInput: string, passwordInput: string) => {
     try {
-      const { data } = await axios.get<StudentRecord[]>("http://localhost:4000/students");
+      const { data } = await axios.get<StudentRecord[]>(process.env.REACT_APP_API_URL || "http://localhost:4000");
       const normalizedEmail = emailInput.trim().toLowerCase();
       const normalizedNumber = passwordInput.trim().toLowerCase();
       const match = data.find(
@@ -50,7 +50,7 @@ export default function Login() {
       return false;
     }
     try {
-      const { data } = await axios.get<StudentRecord[]>("http://localhost:4000/students");
+      const { data } = await axios.get<StudentRecord[]>(process.env.REACT_APP_API_URL || "http://localhost:4000");
       const match = data.find(
         (student) =>
           student.email.toLowerCase() === normalizedEmail &&
@@ -71,7 +71,7 @@ export default function Login() {
   // === Manual login ===
   const handleLogin = async () => {
     try {
-      const { data } = await axios.post("http://localhost:4000/login", {
+      const { data } = await axios.post(process.env.REACT_APP_API_URL || "http://localhost:4000", {
         username,
         password,
       });

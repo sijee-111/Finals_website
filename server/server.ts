@@ -3,6 +3,9 @@ import express from "express";
 import cors from "cors";
 import mysql from "mysql2/promise";
 import { OAuth2Client } from "google-auth-library";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
@@ -10,10 +13,10 @@ app.use(express.json());
 
 // Database connection
 const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "", // update if your local MySQL password is different
-  database: "typescript1",
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "typescript1",
 });
 
 // GOOGLE AUTH SETUP
@@ -380,6 +383,7 @@ app.get("/students/summary", async (_req, res) => {
 });
 
 // ======================= START SERVER =======================
-app.listen(4000, () => {
-  console.log("Server running on http://localhost:4000");
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });

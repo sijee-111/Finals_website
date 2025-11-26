@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS `typescript1` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `typescript1`;
+CREATE DATABASE IF NOT EXISTS `sql12809509` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `sql12809509`;
 
 DROP TABLE IF EXISTS `students`;
 CREATE TABLE `students` (
