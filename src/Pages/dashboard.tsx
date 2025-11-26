@@ -53,7 +53,7 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const { data } = await api.get("/students");
-      setStudents(data);
+      setStudents(data); // <-- use the fetched data
     } catch (error) {
       console.error("Failed to load students", error);
       setMessage("Unable to fetch students from the server.");
