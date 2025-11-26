@@ -52,32 +52,60 @@ export default function Dashboard() {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get("/students");
+      const { data } = await api.get<Student[]>("/students");
       setStudents(data); // <-- use the fetched data
+
+      // compute summary client-side so we don't depend on a backend summary endpoint
+      const computeSummaryFrom = (list: Student[]): StudentSummary => {
+        const total = list.length;
+        const statusCounts = list.reduce<Record<string, number>>((acc, s) => {
+          acc[s.status] = (acc[s.status] || 0) + 1;
+          return acc;
+        }, {});
+        const statusBreakdown = Object.entries(statusCounts).map(([status, count]) => ({ status, count }));
+
+        const programCounts = list.reduce<Record<string, number>>((acc, s) => {
+          const key = s.program || "Unknown";
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {});
+        const topPrograms = Object.entries(programCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([program, count]) => ({ program, count }));
+
+        return { total, statusBreakdown, topPrograms };
+      };
+
+      setSummary(computeSummaryFrom(data));
     } catch (error) {
       console.error("Failed to load students", error);
       setMessage("Unable to fetch students from the server.");
+      // keep summary null or compute from existing students
+      if (students.length) {
+        // fallback compute from already-loaded students
+        const fallbackSummary = {
+          total: students.length,
+          statusBreakdown: STATUS_OPTIONS.map((s) => ({ status: s, count: students.filter((st) => st.status === s).length })).filter(x => x.count > 0),
+          topPrograms: Object.entries(students.reduce<Record<string, number>>((acc, s) => { acc[s.program] = (acc[s.program] || 0) + 1; return acc; }, {}))
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([program, count]) => ({ program, count })),
+        } as StudentSummary;
+        setSummary(fallbackSummary);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchSummary = async () => {
-    try {
-      const { data } = await api.get<StudentSummary>("/students/summary");
-      setSummary(data);
-    } catch (error) {
-      console.error("Failed to load summary", error);
-    }
-  };
-
+  // remove fetchSummary usage and call only fetchStudents
   useEffect(() => {
     if (role && role !== "admin" && role !== "registrar") {
       navigate("/guestdashboard", { replace: true });
       return;
     }
     fetchStudents();
-    fetchSummary();
   }, [role, navigate]);
 
   const filteredStudents = useMemo(() => {
@@ -166,7 +194,6 @@ export default function Dashboard() {
       setEditingId(null);
       setIsFormOpen(false);
       fetchStudents();
-      fetchSummary();
     } catch (error: any) {
       console.error("Failed to save student", error);
       setMessage(error?.response?.data?.message ?? "Unable to save student.");
@@ -209,7 +236,6 @@ export default function Dashboard() {
       await api.delete(`/students/${id}`);
       setMessage("Student removed.");
       fetchStudents();
-      fetchSummary();
     } catch (error) {
       console.error("Failed to delete student", error);
       setMessage("Unable to delete student.");
